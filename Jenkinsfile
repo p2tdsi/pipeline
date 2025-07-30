@@ -1,36 +1,60 @@
 pipeline {
     agent any
 
+    environment {
+        DOCKER_IMAGE = 'crud-app:latest'
+        CONTAINER_NAME = 'crud-app'
+        HOST_PORT = '8081'
+        CONTAINER_PORT = '80'
+        SQLITE_VOLUME = '/var/www/html/database.sqlite:/var/www/html/database.sqlite'
+    }
+
     stages {
-        // Nettoyage du workspace pour éviter les erreurs liées au répertoire
-        stage('Clean Workspace') {
+
+        stage('Test Docker') {
             steps {
-                cleanWs()
+                echo '🔍 Vérification de Docker'
+                sh 'docker --version'
+                sh 'docker ps'
             }
         }
 
-      
+        stage('Build Docker Image') {
+            steps {
+                echo "🛠️ Construction de l’image Docker ${DOCKER_IMAGE}"
+                sh "docker build -t ${DOCKER_IMAGE} ."
+            }
+        }
 
-        // Déploiement du conteneur Docker avec l'image existante
         stage('Deploy') {
             steps {
-                sh 'docker stop crud-app || true'
-                sh 'docker rm crud-app || true'
-                sh 'docker run -d --name crud-app -p 8081:80 -v /var/www/html/database.sqlite:/var/www/html/database.sqlite crud-app:latest'
+                echo "🚀 Déploiement du conteneur ${DOCKER_IMAGE}"
+
+                // Arrêt et suppression si le conteneur existe
+                sh "docker stop ${CONTAINER_NAME} || true"
+                sh "docker rm ${CONTAINER_NAME} || true"
+
+                // Lancement du conteneur
+                sh """
+                    docker run -d --name ${CONTAINER_NAME} \
+                    -p ${HOST_PORT}:${CONTAINER_PORT} \
+                    -v ${SQLITE_VOLUME} \
+                    ${DOCKER_IMAGE}
+                """
             }
         }
     }
 
-    // Gestion des résultats
     post {
-        success {
-            echo 'Pipeline terminé avec succès !'
-        }
         failure {
-            echo 'Échec du pipeline. Vérifiez les logs.'
+            echo '❌ Échec du pipeline. Vérifiez les logs.'
+        }
+        success {
+            echo '✅ Déploiement terminé avec succès.'
         }
     }
 }
+
 
 
 
