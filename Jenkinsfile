@@ -9,17 +9,7 @@ pipeline {
             }
         }
 
-        // Clonage du dépôt Git avec gestion des identifiants
-        stage('Checkout') {
-            steps {
-                checkout([$class: 'GitSCM',
-                          branches: [[name: '*/master']],
-                          userRemoteConfigs: [[
-                              url: 'https://github.com/p2tdsi/pipeline.git',
-                              credentialsId: 'github-token'
-                          ]]])
-            }
-        }
+      
 
         // Déploiement du conteneur Docker avec l'image existante
         stage('Deploy') {
