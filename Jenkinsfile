@@ -13,11 +13,13 @@ pipeline {
                 sh 'docker ps'
             }
         }
+
         stage('Build Image') {
             steps {
                 sh 'docker build -t crud-app:latest .'
             }
         }
+
         stage('Deploy') {
             steps {
                 sh '''
@@ -28,9 +30,6 @@ pipeline {
             }
         }
     }
-}
-
-                // Arrêt et suppression
 
     post {
         failure {
@@ -41,6 +40,8 @@ pipeline {
         }
     }
 }
+
+        
 
 
 
