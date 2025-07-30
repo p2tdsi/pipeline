@@ -15,7 +15,7 @@ pipeline {
                 checkout([$class: 'GitSCM',
                           branches: [[name: '*/master']],
                           userRemoteConfigs: [[
-                              url: 'https://github.com/p2tdsi/projet.git',
+                              url: 'https://github.com/p2tdsi/pipeline.git',
                               credentialsId: 'github-token'
                           ]]])
             }
