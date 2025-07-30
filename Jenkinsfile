@@ -1,56 +1,36 @@
-
-
 pipeline {
     agent {
         docker {
-            image 'docker:latest'
+            image 'docker:20.10' // image officielle avec docker CLI
             args '-v /var/run/docker.sock:/var/run/docker.sock'
         }
     }
 
-    environment {
-        DOCKER_IMAGE = 'crud-app:latest'
-        CONTAINER_NAME = 'crud-app'
-        HOST_PORT = '8081'
-        CONTAINER_PORT = '80'
-        SQLITE_VOLUME = '/var/www/html/database.sqlite:/var/www/html/database.sqlite'
-    }
-
     stages {
-
         stage('Test Docker') {
             steps {
-                echo '🔍 Vérification de Docker'
                 sh 'docker --version'
                 sh 'docker ps'
             }
         }
-
-        stage('Build Docker Image') {
+        stage('Build Image') {
             steps {
-                echo "🛠️ Construction de l’image Docker ${DOCKER_IMAGE}"
-                sh "docker build -t ${DOCKER_IMAGE} ."
+                sh 'docker build -t crud-app:latest .'
             }
         }
-
         stage('Deploy') {
             steps {
-                echo "🚀 Déploiement du conteneur ${DOCKER_IMAGE}"
-
-                // Arrêt et suppression si le conteneur existe
-                sh "docker stop ${CONTAINER_NAME} || true"
-                sh "docker rm ${CONTAINER_NAME} || true"
-
-                // Lancement du conteneur
-                sh """
-                    docker run -d --name ${CONTAINER_NAME} \
-                    -p ${HOST_PORT}:${CONTAINER_PORT} \
-                    -v ${SQLITE_VOLUME} \
-                    ${DOCKER_IMAGE}
-                """
+                sh '''
+                    docker stop crud-app || true
+                    docker rm crud-app || true
+                    docker run -d --name crud-app -p 8081:80 -v /var/www/html/database.sqlite:/var/www/html/database.sqlite crud-app:latest
+                '''
             }
         }
     }
+}
+
+                // Arrêt et suppression
 
     post {
         failure {
