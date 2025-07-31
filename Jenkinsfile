@@ -1,10 +1,5 @@
 pipeline {
-    agent {
-        docker {
-            image 'docker:20.10' // image officielle avec docker CLI
-            args '-v /var/run/docker.sock:/var/run/docker.sock'
-        }
-    }
+    agent any  // ← utilise l'agent Jenkins "classique", sur l'hôte
 
     stages {
         stage('Test Docker') {
@@ -25,7 +20,7 @@ pipeline {
                 sh '''
                     docker stop crud-app || true
                     docker rm crud-app || true
-                    docker run -d --name crud-app -p 8081:80 -v /var/www/html/database.sqlite:/var/www/html/database.sqlite crud-app:latest
+                    docker run -d --name crud-app -p 8081:80 -v /var/www/html:/usr/share/nginx/html crud-app:latest
                 '''
             }
         }
@@ -40,6 +35,7 @@ pipeline {
         }
     }
 }
+
 
         
 
